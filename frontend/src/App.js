@@ -12,6 +12,7 @@ import LaporanPage  from './pages/LaporanPage';
 import ArsipPage    from './pages/ArsipPage';
 import AdminPage    from './pages/AdminPage';
 import MobileDashboardPage from './pages/MobileDashboardPage';
+import CameraTestPage from './pages/CameraTestPage';
 
 // Protected route wrapper
 const PrivateRoute = ({ children, allowedRoles }) => {
@@ -55,6 +56,7 @@ const App = () => (
           }
         />
         <Route path="/field" element={<PrivateRoute><MobileDashboardPage /></PrivateRoute>} />
+        <Route path="/camera-test" element={<CameraTestPage />} />
 
         {/* Redirect root */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

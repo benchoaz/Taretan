@@ -168,6 +168,17 @@ const MobileDashboardPage = () => {
             Otomatis tambah Lokasi, Waktu, & GPS ke laporan
           </p>
         </div>
+
+        {/* Native Camera Test (Hidden/Mini Button for Technical Testing) */}
+        <div className="pt-2 text-center">
+          <button 
+            onClick={() => navigate('/camera-test')}
+            className="text-[10px] font-bold text-slate-400 hover:text-blue-500 flex items-center justify-center gap-1 mx-auto transition-colors"
+          >
+            <span>🔧 PENGUJIAN KAMERA NATIVE (KOTLIN)</span>
+          </button>
+        </div>
+      </div>
       </div>
 
       {/* Bottom Nav App Bar */}
