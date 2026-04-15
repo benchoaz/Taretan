@@ -179,7 +179,6 @@ const MobileDashboardPage = () => {
           </button>
         </div>
       </div>
-      </div>
 
       {/* Bottom Nav App Bar */}
       <div className="fixed bottom-0 inset-x-0 sm:max-w-md sm:mx-auto bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-3xl border-t border-slate-100 px-6 py-3 flex items-center justify-between z-20">
