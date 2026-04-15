@@ -9,9 +9,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: frontend
+
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
+        with:
+          path: .
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -27,21 +33,20 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Dependencies (Frontend)
-        run: |
-          cd frontend
-          npm install
+      - name: Install Dependencies
+        run: npm install
 
       - name: Build React App
-        run: |
-          cd frontend
-          npm run build
+        run: npm run build
 
       - name: Install Capacitor Core
         run: npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/camera
 
       - name: Add Android Platform
-        run: npx cap add android
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
 
       - name: Sync Capacitor
         run: npx cap sync android
@@ -56,4 +61,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zimpen-disposisi-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
