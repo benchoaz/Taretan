@@ -1,0 +1,87 @@
+package main
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.Default()
+
+	// CORS middleware
+	r.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	})
+
+	// Simple API endpoints for testing
+	r.GET("/api/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "success",
+			"message": "E-Disposisi API is running",
+		})
+	})
+
+	r.POST("/api/login", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "success",
+			"message": "Login endpoint (demo)",
+			"data": gin.H{
+				"token": "demo-jwt-token",
+			},
+		})
+	})
+
+	r.GET("/api/disposisi/monitoring", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "success",
+			"data": gin.H{
+				"total": 5,
+				"page":  1,
+				"limit": 10,
+				"disposisi": []gin.H{
+					{
+						"id":          "550e8400-e29b-41d4-a716-446655440000",
+						"surat":       gin.H{"nomor_surat": "001/SM/2026", "perihal": "Permohonan Izin"},
+						"tujuan":      gin.H{"nama": "Budi Staf", "unit_kerja": "Bagian Umum"},
+						"batas_waktu": "2026-01-15",
+						"status":      "pending",
+						"prioritas":   "tinggi",
+					},
+				},
+			},
+		})
+	})
+
+	r.POST("/api/disposisi", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "success",
+			"message": "Disposisi created (demo)",
+			"data": gin.H{
+				"id":     "550e8400-e29b-41d4-a716-446655440001",
+				"status": "pending",
+			},
+		})
+	})
+
+	r.POST("/api/laporan", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "success",
+			"message": "Laporan uploaded (demo)",
+			"data": gin.H{
+				"id":       "550e8400-e29b-41d4-a716-446655440002",
+				"foto_url": "/uploads/laporan/demo.jpg",
+				"tanggal":  "2026-01-14",
+			},
+		})
+	})
+
+	r.Run(":8080")
+}

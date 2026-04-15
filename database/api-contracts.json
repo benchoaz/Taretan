@@ -1,0 +1,114 @@
+{
+  "api_contracts": {
+    "kirim_disposisi": {
+      "endpoint": "POST /api/disposisi",
+      "description": "Endpoint untuk mengirim disposisi surat",
+      "authentication": "Bearer JWT Token (role: pimpinan)",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer {jwt_token}"
+        },
+        "body": {
+          "surat_id": "uuid",
+          "ke_user_id": "uuid",
+          "instruksi": "string",
+          "batas_waktu": "date (YYYY-MM-DD)",
+          "prioritas": "rendah|sedang|tinggi"
+        }
+      },
+      "response_success": {
+        "status": "success",
+        "message": "Disposisi berhasil dikirim",
+        "data": {
+          "id": "uuid",
+          "status": "pending",
+          "created_at": "timestamp"
+        }
+      },
+      "response_error": {
+        "status": "error",
+        "message": "string",
+        "errors": ["array of error messages"]
+      }
+    },
+    "kirim_laporan": {
+      "endpoint": "POST /api/laporan",
+      "description": "Endpoint untuk upload laporan hasil disposisi",
+      "authentication": "Bearer JWT Token (role: staf)",
+      "request": {
+        "headers": {
+          "Content-Type": "multipart/form-data",
+          "Authorization": "Bearer {jwt_token}"
+        },
+        "body": {
+          "disposisi_id": "uuid",
+          "uraian": "string",
+          "latitude": "number (-90 to 90)",
+          "longitude": "number (-180 to 180)",
+          "foto": "file (JPG/PNG, max 5MB)"
+        }
+      },
+      "response_success": {
+        "status": "success",
+        "message": "Laporan berhasil dikirim",
+        "data": {
+          "id": "uuid",
+          "foto_url": "string",
+          "tanggal": "date"
+        }
+      },
+      "response_error": {
+        "status": "error",
+        "message": "string",
+        "errors": ["array of error messages"]
+      }
+    },
+    "monitoring_disposisi": {
+      "endpoint": "GET /api/disposisi/monitoring",
+      "description": "Endpoint untuk mendapatkan data monitoring disposisi",
+      "authentication": "Bearer JWT Token",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer {jwt_token}"
+        },
+        "query_params": {
+          "status": "pending|proses|selesai (optional)",
+          "unit_kerja": "string (optional)",
+          "page": "number (default 1)",
+          "limit": "number (default 10)",
+          "search": "string (optional)"
+        }
+      },
+      "response_success": {
+        "status": "success",
+        "data": {
+          "total": "number",
+          "page": "number",
+          "limit": "number",
+          "disposisi": [
+            {
+              "id": "uuid",
+              "surat": {
+                "nomor_surat": "string",
+                "perihal": "string",
+                "asal_surat": "string"
+              },
+              "tujuan": {
+                "nama": "string",
+                "unit_kerja": "string"
+              },
+              "batas_waktu": "date",
+              "status": "pending|proses|selesai",
+              "prioritas": "rendah|sedang|tinggi"
+            }
+          ]
+        }
+      },
+      "response_error": {
+        "status": "error",
+        "message": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+node-*/
+frontend/node_modules/
+backend/vendor/
+
+# Build outputs
+build/
+dist/
+frontend/build/
+backend/bin/
+*.apk
+*.aab
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archives & Temporary
+*.tar.*
+*.zip
+*.rar
+*.7z
+
+# Database & Sensitive
+*.db
+*.sqlite
+.env
+backend/.env
+backend/edisposisi.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Mobile Native (Build artifacts only)
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/captures/

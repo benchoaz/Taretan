@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Disposisi Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">E-Disposisi Dashboard</h1>
+
+        <!-- SSO Login Section -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4">SSO Login - E-Disposisi</h2>
+            <form id="ssoLoginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">SSO ID</label>
+                    <input type="text" id="ssoId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Masukkan SSO ID Anda">
+                    <p class="mt-1 text-xs text-gray-500">Demo SSO IDs: sso_op_001, sso_kepala_001, sso_staf_001</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="email@office365.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Role</label>
+                    <select id="role" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">Pilih Role Anda</option>
+                        <option value="operator">Operator (Administrator Sistem)</option>
+                        <option value="kepala_opd">Kepala OPD (Pimpinan)</option>
+                        <option value="staf">Staf/Kasi/Kabid</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full">
+                    SSO Login
+                </button>
+            </form>
+            <div id="loginResult" class="mt-4"></div>
+
+            <!-- Role Information -->
+            <div class="mt-6 p-4 bg-blue-50 rounded-md">
+                <h3 class="font-semibold text-blue-800 mb-2">Informasi Role:</h3>
+                <ul class="text-sm text-blue-700 space-y-1">
+                    <li><strong>Operator:</strong> Mengelola sistem, monitoring semua disposisi</li>
+                    <li><strong>Kepala OPD:</strong> Membuat disposisi surat ke staf</li>
+                    <li><strong>Staf:</strong> Menerima disposisi dan membuat laporan</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- API Testing Section -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-xl font-semibold mb-4">API Testing - Role Based Access</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <button onclick="testHealth()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                    Test Health Check
+                </button>
+                <button onclick="testMonitoring()" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">
+                    Test Monitoring (All Roles)
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="testDisposisi()" class="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 disabled:opacity-50" id="btnDisposisi">
+                    Create Disposisi (Kepala OPD Only)
+                </button>
+                <button onclick="testLaporan()" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:opacity-50" id="btnLaporan">
+                    Upload Laporan (Staf Only)
+                </button>
+            </div>
+            <div id="apiResult" class="mt-4 p-4 bg-gray-50 rounded-md">
+                <p class="text-gray-600">Login dengan SSO terlebih dahulu untuk mengakses endpoint yang dibatasi role</p>
+            </div>
+        </div>
+
+        <!-- Monitoring Table -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Disposisi Monitoring</h2>
+            <div id="monitoringTable">
+                <p class="text-gray-600">Load monitoring data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let token = '';
+        let currentUserRole = '';
+
+        // Function to update UI based on user role
+        function updateRoleBasedAccess(role) {
+            const btnDisposisi = document.getElementById('btnDisposisi');
+            const btnLaporan = document.getElementById('btnLaporan');
+
+            // Reset all buttons
+            btnDisposisi.disabled = true;
+            btnLaporan.disabled = true;
+
+            // Enable buttons based on role
+            if (role === 'kepala_opd') {
+                btnDisposisi.disabled = false;
+            } else if (role === 'staf') {
+                btnLaporan.disabled = false;
+            } else if (role === 'operator') {
+                // Operator can access monitoring only
+            }
+        }
+
+        // SSO Login function
+        document.getElementById('ssoLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const ssoId = document.getElementById('ssoId').value;
+            const email = document.getElementById('email').value;
+            const role = document.getElementById('role').value;
+
+            if (!ssoId || !email || !role) {
+                document.getElementById('loginResult').innerHTML = `
+                    <div class="text-red-600">Semua field harus diisi</div>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sso_id: ssoId,
+                        email: email,
+                        role: role
+                    }),
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    token = data.data.token;
+                    const user = data.data.user;
+                    currentUserRole = user.role;
+
+                    document.getElementById('loginResult').innerHTML = `
+                        <div class="text-green-600">
+                            <strong>SSO Login berhasil!</strong><br>
+                            Role: ${user.role}<br>
+                            SSO ID: ${user.sso_id}<br>
+                            Token: ${token.substring(0, 20)}...
+                        </div>
+                    `;
+
+                    // Enable/disable buttons based on role
+                    updateRoleBasedAccess(user.role);
+
+                    // Auto load monitoring data after login
+                    setTimeout(() => testMonitoring(), 500);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                document.getElementById('loginResult').innerHTML = `
+                    <div class="text-red-600">SSO Login gagal: ${error.message}</div>
+                `;
+            }
+        });
+
+        // API testing functions
+        async function testHealth() {
+            try {
+                const response = await fetch('http://localhost:8080/api/health');
+                const data = await response.json();
+                showResult('Health Check', data);
+            } catch (error) {
+                showResult('Health Check', { error: error.message });
+            }
+        }
+
+        async function testMonitoring() {
+            try {
+                const response = await fetch('http://localhost:8080/api/disposisi/monitoring');
+                const data = await response.json();
+                showResult('Monitoring', data);
+                updateMonitoringTable(data);
+            } catch (error) {
+                showResult('Monitoring', { error: error.message });
+            }
+        }
+
+        async function testDisposisi() {
+            try {
+                const response = await fetch('http://localhost:8080/api/disposisi', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        surat_id: '550e8400-e29b-41d4-a716-446655440000',
+                        ke_user_id: '550e8400-e29b-41d4-a716-446655440001',
+                        instruksi: 'Proses dengan segera',
+                        prioritas: 'tinggi'
+                    }),
+                });
+                const data = await response.json();
+                showResult('Create Disposisi', data);
+            } catch (error) {
+                showResult('Create Disposisi', { error: error.message });
+            }
+        }
+
+        async function testLaporan() {
+            try {
+                const formData = new FormData();
+                formData.append('disposisi_id', '550e8400-e29b-41d4-a716-446655440000');
+                formData.append('uraian', 'Laporan telah diproses');
+                formData.append('latitude', '-6.2088');
+                formData.append('longitude', '106.8456');
+
+                const response = await fetch('http://localhost:8080/api/laporan', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: formData,
+                });
+                const data = await response.json();
+                showResult('Upload Laporan', data);
+            } catch (error) {
+                showResult('Upload Laporan', { error: error.message });
+            }
+        }
+
+        function showResult(title, data) {
+            document.getElementById('apiResult').innerHTML = `
+                <h3 class="font-semibold mb-2">${title}</h3>
+                <pre class="text-sm bg-gray-800 text-green-400 p-4 rounded overflow-x-auto">${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+
+        function updateMonitoringTable(data) {
+            if (data.status === 'success' && data.data.disposisi) {
+                const disposisi = data.data.disposisi;
+                const role = data.data.role;
+
+                let html = `
+                    <div class="mb-4 p-3 bg-blue-50 rounded-md">
+                        <strong>Role Anda:</strong> ${role} |
+                        <strong>Total Disposisi:</strong> ${data.data.total}
+                    </div>
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                `;
+
+                // Different headers based on role
+                if (role === 'operator') {
+                    html += `
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor Surat</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Perihal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tujuan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Prioritas</th>
+                    `;
+                } else if (role === 'kepala_opd') {
+                    html += `
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor Surat</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Perihal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kepada</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                    `;
+                } else if (role === 'staf') {
+                    html += `
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor Surat</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Perihal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dari</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Instruksi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    `;
+                }
+
+                html += `
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                `;
+
+                disposisi.forEach(item => {
+                    html += '<tr>';
+
+                    if (role === 'operator') {
+                        html += `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.surat.nomor_surat}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.surat.perihal}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.tujuan.nama} (${item.tujuan.unit_kerja})</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    ${item.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.prioritas}</td>
+                        `;
+                    } else if (role === 'kepala_opd') {
+                        html += `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.surat.nomor_surat}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.surat.perihal}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.tujuan.nama} (${item.tujuan.unit_kerja})</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    ${item.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button class="text-indigo-600 hover:text-indigo-900">Lihat Detail</button>
+                            </td>
+                        `;
+                    } else if (role === 'staf') {
+                        html += `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.surat.nomor_surat}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.surat.perihal}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.dari.nama} (${item.dari.jabatan})</td>
+                            <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="${item.instruksi}">${item.instruksi}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    ${item.status}
+                                </span>
+                            </td>
+                        `;
+                    }
+
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                document.getElementById('monitoringTable').innerHTML = html;
+            } else {
+                document.getElementById('monitoringTable').innerHTML = '<p class="text-gray-600">Belum ada data disposisi atau Anda belum login</p>';
+            }
+        }
+
+        // Auto load monitoring data on page load
+        window.onload = function() {
+            testMonitoring();
+        };
+    </script>
+</body>
+</html>

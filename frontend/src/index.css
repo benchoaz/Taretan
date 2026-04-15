@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    @apply bg-slate-50 text-slate-800 antialiased;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-slate-400; }
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.animate-fade-in-up  { animation: fadeInUp 0.35s ease forwards; }
+.animate-fade-in     { animation: fadeIn 0.3s ease forwards; }
+.animate-slide-left  { animation: slideInLeft 0.3s ease forwards; }
+.animate-scale-in    { animation: scaleIn 0.2s ease forwards; }
+
+.delay-1 { animation-delay: 0.07s; opacity: 0; }
+.delay-2 { animation-delay: 0.14s; opacity: 0; }
+.delay-3 { animation-delay: 0.21s; opacity: 0; }
+.delay-4 { animation-delay: 0.28s; opacity: 0; }
+.delay-5 { animation-delay: 0.35s; opacity: 0; }
+
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Sidebar nav item */
+.nav-item {
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer select-none;
+}
+.nav-item.active {
+  @apply bg-blue-600 text-white shadow-lg shadow-blue-600/25;
+}
+.nav-item:not(.active) {
+  @apply text-slate-400 hover:bg-white/10 hover:text-white;
+}
+.nav-item .nav-icon { @apply w-5 h-5 flex-shrink-0; }
+
+/* Status badges */
+.badge {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border;
+}
+.badge-pending      { @apply bg-amber-50  text-amber-700  border-amber-200; }
+.badge-proses       { @apply bg-blue-50   text-blue-700   border-blue-200; }
+.badge-selesai      { @apply bg-green-50  text-green-700  border-green-200; }
+.badge-ditunda      { @apply bg-slate-100 text-slate-600  border-slate-200; }
+.badge-dikembalikan { @apply bg-red-50    text-red-700    border-red-200; }
+
+/* Priority badges */
+.badge-tinggi  { @apply bg-red-50    text-red-700   border-red-200; }
+.badge-sedang  { @apply bg-amber-50  text-amber-700 border-amber-200; }
+.badge-rendah  { @apply bg-slate-100 text-slate-600 border-slate-200; }
+
+/* Sifat badges */
+.badge-segera  { @apply bg-red-50   text-red-700  border-red-200; }
+.badge-penting { @apply bg-amber-50 text-amber-700 border-amber-200; }
+.badge-biasa   { @apply bg-slate-100 text-slate-600 border-slate-200; }
+
+/* Card style */
+.card { @apply bg-white rounded-2xl border border-slate-100 shadow-sm; }
+.card-sm { @apply bg-white rounded-xl border border-slate-100 shadow-sm; }
+
+/* Input style */
+.input-field {
+  @apply w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm
+         focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400
+         placeholder:text-slate-400 transition-all duration-200;
+}
+.input-label { @apply block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide; }
+
+/* Button variants */
+.btn-primary {
+  @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold
+         hover:bg-blue-700 active:scale-95 transition-all duration-150 shadow-sm shadow-blue-600/20;
+}
+.btn-secondary {
+  @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-semibold
+         hover:bg-slate-200 active:scale-95 transition-all duration-150;
+}
+.btn-danger {
+  @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold
+         hover:bg-red-700 active:scale-95 transition-all duration-150;
+}
+.btn-ghost {
+  @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 text-sm font-medium
+         hover:bg-slate-100 active:scale-95 transition-all duration-150;
+}
+
+/* Table styles */
+.tbl-head { @apply text-xs font-semibold text-slate-500 uppercase tracking-wide py-3 px-4 bg-slate-50 border-b border-slate-100; }
+.tbl-row  { @apply py-3 px-4 text-sm text-slate-700 border-b border-slate-50 hover:bg-slate-50/60 transition-colors duration-100; }
+
+/* Disposisi chain connector */
+.chain-line {
+  @apply absolute left-5 top-full w-0.5 bg-slate-200;
+  height: calc(100% + 16px);
+}
+
+/* Pulse dot for live indicator */
+.live-dot {
+  @apply w-2 h-2 rounded-full bg-green-500;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Progress bar */
+.progress-bar {
+  @apply h-1.5 rounded-full bg-blue-600 transition-all duration-700;
+}
